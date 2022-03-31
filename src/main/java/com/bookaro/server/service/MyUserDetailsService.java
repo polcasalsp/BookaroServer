@@ -1,8 +1,7 @@
 package com.bookaro.server.service;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,11 +28,11 @@ public class MyUserDetailsService implements UserDetailsService {
 			throw new UsernameNotFoundException("User " + username +" not found");
 		}  			
 		List<String> roles = user.getRoles();
-		Set<GrantedAuthority> ga = new HashSet<>();
+		ArrayList<GrantedAuthority> authorities = new ArrayList<>();
 		for(String role:roles) {
-			ga.add(new SimpleGrantedAuthority(role));
+			authorities.add(new SimpleGrantedAuthority(role));
 		}
 		
-		return user;
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
     }
 }

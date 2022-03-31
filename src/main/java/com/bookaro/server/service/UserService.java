@@ -3,6 +3,8 @@ package com.bookaro.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.map.repository.config.EnableMapRepositories;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,20 +27,25 @@ public class UserService {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
+	@PreAuthorize(value = "hasRole('ADMIN')")
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
         Iterable<User> Users = repository.findAll();
         Users.forEach(list::add);
         return list;
     }
-
+    
+    @PostAuthorize(value = "hasRole('ADMIN') or principal.equals(returnObject.get().getUsername())")
     public Optional<User> find(Long id) {
         return repository.findById(id);
     }
 
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public User create(User user) {
         // To ensure the User ID remains unique,
         // use the current timestamp.
+    	List<String> roles = new ArrayList<>();
+		roles.add("USER");
     	User copy = new User(
                 new Date().getTime(),
                 user.getUsername(),
@@ -46,20 +53,18 @@ public class UserService {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getRoles()
+                roles
         );
         return repository.save(copy);
     }
 
-    public Optional<User> update( Long id, User newUser) {
-        // Only update an User if it can be found first.
-        return repository.findById(id)
-                .map(oldUser -> {
-                	User updated = oldUser.updateWith(newUser);
-                   return repository.save(updated);
-                });
+    @PreAuthorize(value = "hasRole('ADMIN')")
+    public User update (User updatedUser) {
+    	updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+    	return repository.save(updatedUser);
     }
 
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public void delete(Long id) {
         repository.deleteById(id);
     }

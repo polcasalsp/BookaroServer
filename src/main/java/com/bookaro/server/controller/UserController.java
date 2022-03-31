@@ -2,28 +2,33 @@ package com.bookaro.server.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.bookaro.server.model.User;
 import com.bookaro.server.service.UserService;
+import com.bookaro.server.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+
 @RestController
-@RequestMapping("/api/services/controller/user")
+@RequestMapping("/api/services/controller/users")
 public class UserController {
 	
 	@Autowired
 	private UserService service;
 
-    public UserController(UserService service) {
-    	this.service = service;
-    }
-    
+	
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
     	 List<User> users = service.findAll();
@@ -31,8 +36,8 @@ public class UserController {
 	}
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> find(@PathVariable("id") Long id) {
-    	Optional<User> user = service.find(id);
+    public ResponseEntity<User> find(@PathVariable("id") Long id, Principal pri) {
+    	Optional<User> user = service.find(id);   
         return ResponseEntity.of(user);
     }
 
@@ -46,28 +51,23 @@ public class UserController {
         return ResponseEntity.created(location).body(created);
     }
     
-    @PutMapping("/{id}")
-    public ResponseEntity<User> update(
-            @PathVariable("id") Long id,
-            @RequestBody User updatedUser) {
-
-        Optional<User> updated = service.update(id, updatedUser);
-
-        return updated
-                .map(value -> ResponseEntity.ok().body(value))
-                .orElseGet(() -> {
-                    User created = service.create(updatedUser);
-                    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                            .path("/{id}")
-                            .buildAndExpand(created.getId())
-                            .toUri();
-                    return ResponseEntity.created(location).body(created);
-                });
+    @PatchMapping(path = "/{id}", consumes = "application/json-patch+json")
+    public ResponseEntity<User> update(@PathVariable("id") Long id, @RequestBody JsonPatch patch) {    	
+    	try {
+            User user = service.find(id).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+            User patchedUser = service.update((User) Utils.applyPatch(patch, user));
+            return ResponseEntity.ok(patchedUser);            
+        } catch (JsonPatchException | JsonProcessingException e) {
+        	e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }    	
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<User> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
-    }
+    }    
 }

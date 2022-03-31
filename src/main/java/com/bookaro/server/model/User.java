@@ -9,10 +9,11 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Table;
+import javax.persistence.Id;
 
+import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements UserDetails {
 
 	@Id
@@ -48,18 +50,6 @@ public class User implements UserDetails {
 	@Column(name="last_name")
 	private String lastName;
 	
-	public User updateWith(User user) {
-        return new User(
-            this.id,
-            user.username,
-            user.password,
-            user.firstName,
-            user.lastName,
-            user.email,
-            user.getRoles()
-        );
-    }
-	
 	@ElementCollection(fetch= FetchType.EAGER)
 	@CollectionTable(
 			name="roles",
@@ -67,8 +57,6 @@ public class User implements UserDetails {
 			)
 	@Column(name="user_role")
 	private List<String> roles;
-
-
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
