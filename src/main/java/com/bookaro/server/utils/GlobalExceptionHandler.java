@@ -1,8 +1,5 @@
 package com.bookaro.server.utils;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -114,13 +111,30 @@ public class GlobalExceptionHandler {
       .body(new ApiCallError<>("Internal server error", List.of(ex.getMessage())));
   }
 
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
   public static class ApiCallError<T> {
 
     private String message;
     private List<T> details;
-
+	public ApiCallError(String message, List<T> details) {
+		
+		this.message = message;
+		this.details = details;
+	}
+	public String getMessage() {
+		return message;
+	}
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	public List<T> getDetails() {
+		return details;
+	}
+	public void setDetails(List<T> details) {
+		this.details = details;
+	}
+	public ApiCallError() {
+		
+	}
+    
   }
 }

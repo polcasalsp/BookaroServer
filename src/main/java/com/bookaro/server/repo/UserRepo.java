@@ -7,7 +7,5 @@ import com.bookaro.server.model.User;
 
 @Repository
 public interface UserRepo extends CrudRepository<User, Long>{
-
-	User findByUsername(String username); 
- 
+	User findByUsername(String username);  
 }

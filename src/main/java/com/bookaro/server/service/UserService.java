@@ -40,12 +40,12 @@ public class UserService {
         return repository.findById(id);
     }
 
-    @PreAuthorize(value = "hasRole('ADMIN')")
+    //@PreAuthorize(value = "hasRole('ADMIN')")
     public User create(User user) {
         // To ensure the User ID remains unique,
         // use the current timestamp.
     	List<String> roles = new ArrayList<>();
-		roles.add("USER");
+		roles.add("ROLE_USER");
     	User copy = new User(
                 new Date().getTime(),
                 user.getUsername(),

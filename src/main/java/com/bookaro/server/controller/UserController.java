@@ -41,7 +41,7 @@ public class UserController {
         return ResponseEntity.of(user);
     }
 
-    @PostMapping
+    @PostMapping("/insert")
     public ResponseEntity<User> create(@RequestBody User user) {
     	User created = service.create(user);
     	URI location = ServletUriComponentsBuilder.fromCurrentRequest()
