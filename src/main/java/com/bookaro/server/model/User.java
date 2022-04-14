@@ -1,20 +1,17 @@
 package com.bookaro.server.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.JoinColumn;
 import javax.persistence.Id;
 
 import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @SuppressWarnings("serial")
@@ -42,42 +39,47 @@ public class User implements UserDetails {
 	
 	@Column(name="last_name")
 	private String lastName;
-	
-	@ElementCollection(fetch= FetchType.EAGER)
-	@CollectionTable(
-			name="roles",
-			joinColumns = @JoinColumn(name="user_id")
-			)
+
 	@Column(name="user_role")
-	private List<String> roles;
+	private String role;
 
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
+	public Collection<GrantedAuthority> getAuthorities() {
+		role = this.getRole();
+		ArrayList<GrantedAuthority> authorities = new ArrayList<>();		
+		if (role.equals("ADMIN")) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+			authorities.add(new SimpleGrantedAuthority("CREATE"));
+			authorities.add(new SimpleGrantedAuthority("READ"));
+			authorities.add(new SimpleGrantedAuthority("UPDATE"));
+			authorities.add(new SimpleGrantedAuthority("DELETE"));
+		} else if (role.equals("EMPLOYEE")) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+			authorities.add(new SimpleGrantedAuthority("CREATE"));
+			authorities.add(new SimpleGrantedAuthority("READ"));
+		} else {
+			authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+		}		
+		return authorities;
 	}
 
 	@Override
 	public boolean isAccountNonExpired() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
@@ -129,28 +131,32 @@ public class User implements UserDetails {
 		this.lastName = lastName;
 	}
 
-	public List<String> getRoles() {
-		return roles;
+	public String getRole() {
+		return role;
 	}
 
-	public void setRoles(List<String> roles) {
-		this.roles = roles;
+	public void setRoles(String role) {
+		this.role = role;
 	}
 
 	public User(Long id, String username, String password, String email, String firstName, String lastName,
-			List<String> roles) {
-		
+			String role) {		
 		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.email = email;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.roles = roles;
+		this.role = role;
 	}
 
-	public User() {
-		
+	public User(String username, String password, String role) {	
+		this.username = username;
+		this.password = password;
+		this.role = role;
+	}
+	
+	public User() {		
 	}
 	
 }

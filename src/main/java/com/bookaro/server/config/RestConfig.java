@@ -23,11 +23,11 @@ import com.bookaro.server.service.MyUserDetailsService;
 		  jsr250Enabled = true)
 public class RestConfig extends WebSecurityConfigurerAdapter {
 	
-	 @Autowired
-     private MyUserDetailsService userDetailsService;
+	@Autowired
+    private MyUserDetailsService userDetailsService;
 	 
-	 @Autowired
-	 private BCryptPasswordEncoder bCryptPasswordEncoder;
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

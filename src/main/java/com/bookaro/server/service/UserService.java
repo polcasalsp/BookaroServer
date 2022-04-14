@@ -39,13 +39,16 @@ public class UserService {
     public Optional<User> find(Long id) {
         return repository.findById(id);
     }
+    
+    @PostAuthorize(value = "hasRole('ADMIN') or principal.equals(returnObject.get().getUsername())")
+    public Optional<User> find(String username) {
+        return repository.findByUsername(username);
+    }
 
     //@PreAuthorize(value = "hasRole('ADMIN')")
     public User create(User user) {
         // To ensure the User ID remains unique,
-        // use the current timestamp.
-    	List<String> roles = new ArrayList<>();
-		roles.add("ROLE_USER");
+        // use the current timestamp.	
     	User copy = new User(
                 new Date().getTime(),
                 user.getUsername(),
@@ -53,7 +56,7 @@ public class UserService {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                roles
+                user.getRole()
         );
         return repository.save(copy);
     }

@@ -36,16 +36,15 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
-                                                HttpServletResponse res) throws AuthenticationException {
+    											HttpServletResponse res)
+    											throws AuthenticationException {
         try {
             User creds = new ObjectMapper()
-                    .readValue(req.getInputStream(), User.class);
-
-            return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            creds.getUsername(),
-                            creds.getPassword())
-            );
+            		.readValue(req.getInputStream(), User.class);
+            
+            return authenticationManager
+            		.authenticate(new UsernamePasswordAuthenticationToken(creds.getUsername(), creds.getPassword()));
+            
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -63,14 +62,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 			roles.add(authority.toString());
 		}
     	String token = JWT.create()
-                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())    
-                .withClaim("role", roles)
+                .withSubject(((User) auth.getPrincipal()).getUsername())    
+                .withClaim("authorities", roles)
                 .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
                 .sign(Algorithm.HMAC512(SecurityConstants.SECRET.getBytes()));
 
-        String body = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername() + " " + token;
-
-        res.getWriter().write(body);
+        res.getWriter().write(token);
         res.getWriter().flush();
     }
 }

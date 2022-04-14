@@ -27,7 +27,6 @@ public class UserController {
 	
 	@Autowired
 	private UserService service;
-
 	
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
@@ -35,12 +34,18 @@ public class UserController {
          return ResponseEntity.ok().body(users);
 	}
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<User> find(@PathVariable("id") Long id, Principal pri) {
     	Optional<User> user = service.find(id);   
         return ResponseEntity.of(user);
     }
 
+	@GetMapping("/username/{username}")
+	public ResponseEntity<User> getUsuario (@PathVariable("username") String username) {
+		Optional<User> user = service.find(username); 
+		return ResponseEntity.of(user);
+	}
+    
     @PostMapping("/insert")
     public ResponseEntity<User> create(@RequestBody User user) {
     	User created = service.create(user);
